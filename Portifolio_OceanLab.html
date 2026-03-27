@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OceanLab · Coastal & Socioenvironmental Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ocean:   #021B2C;
+  --deep:    #031522;
+  --teal:    #00A99D;
+  --teal2:   #00C9B8;
+  --sand:    #E8DECA;
+  --fog:     #8BA3AD;
+  --white:   #F4F1EC;
+  --red:     #C0392B;
+
+  /* per-member accent colours */
+  --c1: #00A99D;   /* Eduardo – teal */
+  --c2: #3A86C8;   /* João – steel blue */
+  --c3: #C8A46B;   /* Lucas – earth/amber (ajustado para contraste) */
+}
+
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--deep);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* ══════════════════════════════════════════
+   STICKY NAV TABS
+══════════════════════════════════════════ */
+.tab-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 999;
+  background: rgba(3, 21, 34, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  height: 56px;
+  transform: translateY(-100%);
+  transition: transform .4s cubic-bezier(.4,0,.2,1);
+}
+
+.tab-nav.visible {
+  transform: translateY(0);
+}
+
+.tab-list {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  list-style: none;
+  max-width: 900px;
+  width: 100%;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--fog);
+  border-radius: 6px;
+  transition: color .25s, background .25s;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 70%; height: 2px;
+  background: var(--tab-color, var(--teal));
+  border-radius: 2px;
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+}
+
+.tab-btn:hover {
+  color: var(--white);
+  background: rgba(255,255,255,.05);
+}
+
+.tab-btn.active {
+  color: var(--tab-color, var(--teal));
+}
+
+.tab-btn.active::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.tab-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--tab-color, var(--teal));
+  flex-shrink: 0;
+  opacity: .7;
+}
+
+.tab-btn.active .tab-dot {
+  opacity: 1;
+  box-shadow: 0 0 6px var(--tab-color, var(--teal));
+}
+
+@media (max-width: 600px) {
+  .tab-btn { font-size: .58rem; padding: 8px 6px; gap: 4px; }
+  .tab-dot { display: none; }
+}
+
+/* ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 60px 24px;
+}
+
+/* animated SVG wave background */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-bg svg {
+  width: 100%; height: 100%;
+  position: absolute; inset: 0;
+}
+
+.wave-path {
+  animation: waveShift 12s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+.wave-path:nth-child(2) { animation-delay: -4s; opacity:.5; }
+.wave-path:nth-child(3) { animation-delay: -8s; opacity:.3; }
+
+@keyframes waveShift {
+  0%   { d: path("M0,180 C360,100 720,240 1440,160 L1440,600 L0,600Z"); }
+  100% { d: path("M0,140 C360,220 720,100 1440,200 L1440,600 L0,600Z"); }
+}
+
+.particles {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--teal);
+  opacity: 0;
+  animation: float var(--dur, 8s) ease-in-out var(--del, 0s) infinite;
+}
+
+@keyframes float {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: .4; }
+  90%  { opacity: .15; }
+  100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+}
+
+.hero-inner {
+  position: relative; z-index: 1;
+  text-align: center;
+  max-width: 800px;
+}
+
+.eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: .75rem;
+  letter-spacing: .2em;
+  color: var(--teal);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: slideUp .7s .3s forwards;
+}
+
+.hero h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 900;
+  line-height: .95;
+  letter-spacing: -.03em;
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: slideUp .8s .5s forwards;
+}
+
+.hero h1 em {
+  font-style: italic;
+  color: var(--teal);
+}
+
+.hero-sub {
+  font-size: clamp(.95rem, 2vw, 1.15rem);
+  color: var(--fog);
+  font-weight: 300;
+  line-height: 1.7;
+  max-width: 580px;
+  margin: 0 auto 48px;
+  opacity: 0;
+  animation: slideUp .8s .7s forwards;
+}
+
+.cta-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  border: 1.5px solid var(--teal);
+  color: var(--teal);
+  text-decoration: none;
+  font-size: .9rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+  transition: all .3s;
+  opacity: 0;
+  animation: slideUp .8s .9s forwards;
+}
+
+.cta-btn:hover {
+  background: var(--teal);
+  color: var(--deep);
+}
+
+
+.hero-specialties {
+  margin: 34px auto 0;
+  max-width: 920px;
+  opacity: 0;
+  animation: slideUp .8s 1.05s forwards;
+}
+
+.hero-specialties-title {
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 24px;
+}
+
+.specialties-network {
+  position: relative;
+  width: min(92vw, 820px);
+  height: 480px;
+  margin: 0 auto;
+}
+
+.network-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,169,157,.45);
+  background: radial-gradient(circle at 35% 30%, rgba(0,169,157,.20), rgba(0,169,157,.10) 45%, rgba(255,255,255,.03) 100%);
+  box-shadow: 0 0 40px rgba(0,169,157,.08), inset 0 0 20px rgba(255,255,255,.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 28px;
+  font-family: 'Fraunces', serif;
+  font-size: 1.55rem;
+  line-height: 1.1;
+  color: var(--white);
+  z-index: 3;
+}
+
+.network-line {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 1px;
+  transform-origin: left center;
+  background: linear-gradient(to right, rgba(0,169,157,.45), rgba(255,255,255,.10));
+  z-index: 1;
+}
+
+.network-node {
+  position: absolute;
+  width: 170px;
+  min-height: 170px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.12);
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.09), rgba(255,255,255,.03) 68%, rgba(255,255,255,.015) 100%);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 22px;
+  color: var(--fog);
+  font-size: .8rem;
+  line-height: 1.38;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.015);
+  z-index: 2;
+  transition: transform .3s ease, border-color .3s ease, color .3s ease, background .3s ease;
+}
+
+.network-node:hover {
+  transform: scale(1.05);
+  color: var(--white);
+  border-color: rgba(0,169,157,.35);
+  background: radial-gradient(circle at 35% 30%, rgba(0,169,157,.14), rgba(255,255,255,.05) 68%, rgba(255,255,255,.015) 100%);
+}
+
+.network-node strong {
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .specialties-network {
+    height: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: min(92vw, 620px);
+  }
+
+  .network-core,
+  .network-node,
+  .network-line {
+    position: relative;
+    left: auto;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    transform: none !important;
+  }
+
+  .network-core {
+    width: 100%;
+    height: auto;
+    min-height: 130px;
+    border-radius: 24px;
+    grid-column: 1 / -1;
+    font-size: 1.3rem;
+  }
+
+  .network-node {
+    width: 100%;
+    min-height: 120px;
+    border-radius: 24px;
+  }
+
+  .network-line {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .specialties-network {
+    grid-template-columns: 1fr;
+  }
+
+  .network-core {
+    min-height: 110px;
+    padding: 22px;
+  }
+
+  .network-node {
+    min-height: 100px;
+    font-size: .82rem;
+  }
+}
+
+
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(28px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* scroll indicator */
+.scroll-hint {
+  position: absolute;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--fog);
+  font-size: .7rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-family: 'DM Mono', monospace;
+  opacity: 0;
+  animation: slideUp .8s 1.2s forwards;
+}
+
+.scroll-line {
+  width: 1px; height: 48px;
+  background: linear-gradient(to bottom, var(--teal), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0%,100% { transform: scaleY(1); opacity:1; }
+  50%      { transform: scaleY(.6); opacity:.4; }
+}
+
+/* ══════════════════════════════════════════
+   TEAM SECTION
+══════════════════════════════════════════ */
+.team-section {
+  padding: 120px 24px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  letter-spacing: .2em;
+  color: var(--teal);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.section-heading {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 80px;
+}
+
+/* ── team tabs + member panels ── */
+.team-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: -20px 0 40px;
+}
+
+.team-tab-btn {
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  color: var(--fog);
+  padding: 14px 18px;
+  min-width: 220px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .25s, background .25s, color .25s, transform .25s;
+}
+
+.team-tab-btn:hover {
+  background: rgba(255,255,255,.05);
+  color: var(--white);
+  transform: translateY(-1px);
+}
+
+.team-tab-btn.active {
+  border-color: var(--tab-accent, var(--teal));
+  background: rgba(255,255,255,.06);
+  color: var(--white);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+}
+
+.team-tab-kicker {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--tab-accent, var(--teal));
+  margin-bottom: 8px;
+}
+
+.team-tab-name {
+  display: block;
+  font-family: 'Fraunces', serif;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.team-panels {
+  position: relative;
+}
+
+.member-card {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-bottom: 0;
+  position: relative;
+  opacity: 1;
+  transform: none;
+}
+
+.member-card.active {
+  display: grid;
+}
+
+.member-card:nth-child(even) {
+  direction: rtl;
+}
+.member-card:nth-child(even) > * {
+  direction: ltr;
+}
+
+/* left: graphic pane */
+.card-visual {
+  position: relative;
+  min-height: 520px;
+  overflow: hidden;
+}
+
+.card-number {
+  position: absolute;
+  top: 32px; left: 40px;
+  font-family: 'Fraunces', serif;
+  font-size: 7rem;
+  font-weight: 900;
+  opacity: .07;
+  line-height: 1;
+  color: var(--white);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.card-avatar-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-avatar {
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Fraunces', serif;
+  font-size: 5rem;
+  font-weight: 900;
+  color: var(--accent-color);
+  background: rgba(255,255,255,.03);
+  position: relative;
+  z-index: 1;
+}
+
+.card-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-color);
+  opacity: .3;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.card-avatar::before {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  border-radius: 50%;
+  border: 1px dashed var(--accent-color);
+  opacity: .15;
+  animation: spin 20s linear infinite;
+}
+
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity:.3; }
+  50%      { transform: scale(1.06); opacity:.6; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* orbiting dots */
+.orbit-dot {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  opacity: .7;
+}
+
+.card-bg-shape {
+  position: absolute;
+  inset: 0;
+  background: var(--accent-color);
+  opacity: .04;
+  clip-path: polygon(0 20%, 100% 0%, 100% 80%, 0 100%);
+}
+
+/* right: content pane */
+.card-content {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  padding: 52px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-content::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: var(--accent-color);
+  opacity: .6;
+}
+
+.member-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(255,255,255,.08);
+  margin: 0 0 24px;
+}
+
+.member-meta-item {
+  background: rgba(255,255,255,.02);
+  padding: 14px 16px;
+}
+
+.member-meta-label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  margin-bottom: 8px;
+}
+
+.member-meta-value {
+  display: block;
+  color: var(--white);
+  font-size: .84rem;
+  line-height: 1.45;
+}
+
+.member-role {
+  font-family: 'DM Mono', monospace;
+  font-size: .7rem;
+  letter-spacing: .16em;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.member-name {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 20px;
+}
+
+.member-bio {
+  font-size: .9rem;
+  color: var(--fog);
+  line-height: 1.75;
+  margin-bottom: 36px;
+  font-weight: 300;
+}
+
+/* specialty tags */
+.tags {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 36px;
+}
+
+.tag {
+  padding: 5px 14px;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  font-size: .72rem;
+  letter-spacing: .06em;
+  font-family: 'DM Mono', monospace;
+  opacity: .8;
+  transition: all .2s;
+}
+
+.tag:hover { opacity: 1; background: var(--accent-color); color: var(--deep); }
+
+/* services list */
+.services-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.service-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.service-item .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+.service-item span {
+  font-size: .83rem;
+  color: var(--fog);
+  line-height: 1.45;
+}
+
+/* education strip */
+.edu-strip {
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edu-row {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.edu-year {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  color: var(--accent-color);
+  white-space: nowrap;
+  opacity: .8;
+}
+
+.edu-text {
+  font-size: .82rem;
+  color: rgba(255,255,255,.5);
+  line-height: 1.4;
+}
+
+/* lattes link */
+.lattes-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: .72rem;
+  color: var(--fog);
+  text-decoration: none;
+  letter-spacing: .08em;
+  margin-top: 20px;
+  transition: color .2s;
+}
+.lattes-link:hover { color: var(--accent-color); }
+.lattes-link::before {
+  content: '';
+  display: inline-block;
+  width: 20px; height: 1px;
+  background: currentColor;
+}
+
+/* ══════════════════════════════════════════
+   SERVICES OVERVIEW STRIP
+══════════════════════════════════════════ */
+.services-strip {
+  border-top: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 80px 24px;
+  background: rgba(0,169,157,.04);
+}
+
+.services-strip-inner {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.strip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1px;
+  background: rgba(255,255,255,.06);
+  margin-top: 60px;
+}
+
+.strip-cell {
+  background: var(--deep);
+  padding: 36px 28px;
+  transition: background .3s;
+}
+
+.strip-cell:hover { background: rgba(0,169,157,.05); }
+
+.strip-icon {
+  font-size: 1.6rem;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.strip-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--white);
+}
+
+.strip-desc {
+  font-size: .8rem;
+  color: var(--fog);
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════
+   PROJECTS SECTION
+══════════════════════════════════════════ */
+.projects-section {
+  padding: 120px 24px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1px;
+  background: rgba(255,255,255,.06);
+  margin-top: 60px;
+}
+
+.project-card {
+  background: var(--deep);
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+  transition: background .3s;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity .6s, transform .6s, background .3s;
+}
+
+.project-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.project-card:hover {
+  background: rgba(255,255,255,.025);
+}
+
+.project-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  background: var(--proj-color, var(--teal));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .4s cubic-bezier(.4,0,.2,1);
+}
+
+.project-card:hover::before {
+  transform: scaleX(1);
+}
+
+.project-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--proj-color, var(--teal));
+  color: var(--proj-color, var(--teal));
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  border-radius: 2px;
+}
+
+.project-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 14px;
+  color: var(--white);
+}
+
+.project-desc {
+  font-size: .83rem;
+  color: var(--fog);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255,255,255,.06);
+  padding-top: 16px;
+}
+
+.project-author {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  color: var(--proj-color, var(--teal));
+  letter-spacing: .06em;
+}
+
+.project-year {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  color: rgba(255,255,255,.25);
+}
+
+/* ══════════════════════════════════════════
+   STATS STRIP
+══════════════════════════════════════════ */
+.stats-strip {
+  border-top: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 60px 24px;
+}
+
+.stats-inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: rgba(255,255,255,.06);
+}
+
+.stat-cell {
+  background: var(--deep);
+  padding: 40px 28px;
+  text-align: center;
+}
+
+.stat-number {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 900;
+  color: var(--teal);
+  line-height: 1;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--fog);
+}
+
+/* ══════════════════════════════════════════
+   FOOTER (enhanced)
+══════════════════════════════════════════ */
+footer {
+  padding: 64px 24px 40px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.footer-inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+
+.footer-brand .brand-name {
+  font-family: 'Fraunces', serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.footer-brand .brand-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  color: var(--teal);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.footer-brand p {
+  font-size: .82rem;
+  color: var(--fog);
+  line-height: 1.65;
+}
+
+.footer-col-title {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  margin-bottom: 16px;
+}
+
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links a {
+  font-size: .83rem;
+  color: var(--fog);
+  text-decoration: none;
+  transition: color .2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-links a::before {
+  content: '›';
+  color: var(--teal);
+  font-size: 1rem;
+}
+
+.footer-links a:hover { color: var(--white); }
+
+.footer-partners {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.partner-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  letter-spacing: .08em;
+  color: var(--fog);
+  border: 1px solid rgba(255,255,255,.08);
+  padding: 5px 12px;
+  border-radius: 2px;
+  width: fit-content;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,.06);
+  padding-top: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-bottom p {
+  font-family: 'DM Mono', monospace;
+  font-size: .65rem;
+  letter-spacing: .1em;
+  color: rgba(255,255,255,.18);
+}
+
+@media (max-width: 900px) {
+  .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+  .stats-inner { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .projects-grid { grid-template-columns: 1fr; }
+  .stats-inner { grid-template-columns: repeat(2, 1fr); }
+}
+
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .member-card {
+    grid-template-columns: 1fr;
+    direction: ltr !important;
+  }
+  .card-visual { min-height: 320px; }
+  .card-content { padding: 36px 28px; }
+  .services-grid { grid-template-columns: 1fr; }
+  .member-card:nth-child(even) { direction: ltr; }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE / TABLET RESPONSIVE FIXES
+══════════════════════════════════════════ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero {
+    min-height: auto;
+    padding: 96px 24px 72px;
+  }
+
+  .hero-inner {
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .hero-sub {
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .specialties-network {
+    height: auto !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    width: min(92vw, 760px);
+  }
+
+  .network-line {
+    display: none !important;
+  }
+
+  .network-core,
+  .network-node,
+  .network-node-wide {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    min-height: 128px !important;
+    border-radius: 24px !important;
+    padding: 20px 18px !important;
+  }
+
+  .network-core {
+    grid-column: 1 / -1;
+    min-height: 140px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    min-height: auto;
+    padding: 92px 20px 60px;
+  }
+
+  .hero-inner {
+    text-align: center;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 10vw, 3.4rem) !important;
+    line-height: 1.05 !important;
+  }
+
+  .hero-sub {
+    font-size: 0.96rem !important;
+    line-height: 1.55 !important;
+    max-width: 100% !important;
+    margin: 0 auto 18px !important;
+    padding: 0 4px;
+  }
+
+  .cta-btn {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-specialties {
+    margin-top: 28px !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .hero-specialties-title {
+    text-align: center !important;
+    width: 100%;
+    margin-bottom: 18px !important;
+  }
+
+  .specialties-network {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 auto !important;
+  }
+
+  .network-line {
+    display: none !important;
+  }
+
+  .network-core,
+  .network-node,
+  .network-node-wide {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    min-height: auto !important;
+    border-radius: 22px !important;
+    padding: 18px 16px !important;
+    text-align: center !important;
+  }
+
+  .network-core {
+    min-height: 112px !important;
+    font-size: 1.2rem !important;
+  }
+
+  .network-node,
+  .network-node-wide {
+    font-size: 0.9rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .scroll-hint {
+    display: none !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .hero {
+    padding: 86px 16px 52px;
+  }
+
+  .eyebrow {
+    font-size: 0.62rem !important;
+    letter-spacing: 0.16em !important;
+  }
+
+  .hero-sub {
+    font-size: 0.92rem !important;
+  }
+
+  .network-core,
+  .network-node,
+  .network-node-wide {
+    padding: 16px 14px !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   SAFARI / FILE PREVIEW FALLBACK
+══════════════════════════════════════════ */
+@media (max-width: 768px), (prefers-reduced-motion: reduce) {
+  .eyebrow,
+  .hero h1,
+  .hero-sub,
+  .cta-btn,
+  .hero-specialties,
+  .scroll-hint,
+  .project-card,
+  .member-card {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   iPHONE / TOUCH FIX FOR TEAM TABS
+══════════════════════════════════════════ */
+.team-tab-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  touch-action: manipulation;
+  position: relative;
+  z-index: 20;
+}
+
+.team-tabs {
+  position: relative;
+  z-index: 20;
+}
+
+.team-panels {
+  position: relative;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .team-tabs {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin: 0 0 24px !important;
+  }
+
+  .team-tab-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 14px 16px !important;
+  }
+
+  .member-card,
+  .member-card.active {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   HASH / NO-JS FALLBACK FOR TEAM TABS
+══════════════════════════════════════════ */
+.team-tab-btn {
+  text-decoration: none;
+}
+
+.member-card {
+  display: none !important;
+}
+
+.member-card.active {
+  display: grid !important;
+}
+
+#eduardo:target,
+#joao:target,
+#lucas:target {
+  display: grid !important;
+}
+
+#joao:target ~ #eduardo,
+#lucas:target ~ #eduardo,
+#lucas:target ~ #joao {
+  display: none !important;
+}
+
+/* when a hash target is active, don't rely on JS class */
+.team-panels:has(#joao:target) #eduardo,
+.team-panels:has(#lucas:target) #eduardo,
+.team-panels:has(#lucas:target) #joao {
+  display: none !important;
+}
+.team-panels:has(#joao:target) #joao,
+.team-panels:has(#lucas:target) #lucas {
+  display: grid !important;
+}
+
+/* iOS file preview can ignore :has; direct target still works because only one panel is shown by JS init */
+
+</style>
+</head>
+<body>
+
+<!-- ═══ TAB NAV ═══ -->
+<nav class="tab-nav" id="tabNav" aria-label="Navegação por seções">
+  <ul class="tab-list">
+    <li class="tab-item">
+      <button class="tab-btn active" data-target="topo" style="--tab-color:#00A99D">
+        <span class="tab-dot"></span> Início
+      </button>
+    </li>
+    <li class="tab-item">
+      <button class="tab-btn" data-target="servicos" style="--tab-color:#00A99D">
+        <span class="tab-dot"></span> Serviços
+      </button>
+    </li>
+    <li class="tab-item">
+      <button class="tab-btn" data-target="eduardo" style="--tab-color:#00A99D">
+        <span class="tab-dot"></span> Eduardo Pantoja
+      </button>
+    </li>
+    <li class="tab-item">
+      <button class="tab-btn" data-target="joao" style="--tab-color:#3A86C8">
+        <span class="tab-dot"></span> João Gomes
+      </button>
+    </li>
+    <li class="tab-item">
+      <button class="tab-btn" data-target="lucas" style="--tab-color:#8C6D3F">
+        <span class="tab-dot"></span> Lucas Pereira
+      </button>
+    </li>
+    <li class="tab-item">
+      <button class="tab-btn" data-target="projetos" style="--tab-color:#00A99D">
+        <span class="tab-dot"></span> Projetos
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="topo">
+  <div class="hero-bg">
+    <svg viewBox="0 0 1440 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <path class="wave-path" fill="#00A99D" opacity=".08"
+        d="M0,180 C360,100 720,240 1440,160 L1440,600 L0,600Z"/>
+      <path class="wave-path" fill="#3A86C8" opacity=".06"
+        d="M0,220 C400,140 900,280 1440,200 L1440,600 L0,600Z"/>
+      <path class="wave-path" fill="#8C6D3F" opacity=".04"
+        d="M0,260 C500,180 1000,320 1440,240 L1440,600 L0,600Z"/>
+    </svg>
+    <div class="particles" id="particles"></div>
+  </div>
+
+  <div class="hero-inner">
+    <p class="eyebrow">OceanLab · Coastal & Socioenvironmental Systems · Belém, Pará</p>
+    <h1>Ciência do<br>Mar <em>Amazônico</em></h1>
+    <p class="hero-sub">
+      Um coletivo de oceanógrafos amazonicos atuando de forma integrativa nas Ciências do Mar 
+    </p>
+    <a class="cta-btn" href="#equipe">Conheça a equipe</a>
+  </div>
+
+  
+<div class="hero-specialties">
+  <p class="hero-specialties-title">Especialidades integradas</p>
+  <div class="specialties-network">
+    <div class="network-line" style="width:190px; transform:translate(0,-50%) rotate(-90deg);"></div>
+    <div class="network-line" style="width:190px; transform:translate(0,-50%) rotate(-45deg);"></div>
+    <div class="network-line" style="width:190px; transform:translate(0,-50%) rotate(0deg);"></div>
+    <div class="network-line" style="width:190px; transform:translate(0,-50%) rotate(45deg);"></div>
+    <div class="network-line" style="width:190px; transform:translate(0,-50%) rotate(90deg);"></div>
+    <div class="network-line" style="width:190px; transform:translate(0,-50%) rotate(135deg);"></div>
+    <div class="network-line" style="width:190px; transform:translate(0,-50%) rotate(180deg);"></div>
+    <div class="network-line" style="width:190px; transform:translate(0,-50%) rotate(225deg);"></div>
+
+    <div class="network-core">Especialidades<br>OceanLab</div>
+
+    <div class="network-node" style="left:50%; top:0; transform:translate(-50%, 0);">
+      Coleta, Análise e Processamento de Dados Oceanográficos e Socioambientais
+    </div>
+
+    <div class="network-node" style="right:90px; top:40px;">
+      Análises de <strong>(socio)biodiversidade</strong>
+    </div>
+
+    <div class="network-node" style="right:0; top:155px;">
+      eDNA e DNA Barcoding
+    </div>
+
+    <div class="network-node" style="right:90px; bottom:40px;">
+      Geoprocessamento e Modelagem Espacial
+    </div>
+
+    <div class="network-node" style="left:50%; bottom:0; transform:translate(-50%, 0);">
+      Ciência de Dados e Programação em Python
+    </div>
+
+    <div class="network-node" style="left:90px; bottom:40px;">
+      Análises Socioambientais e Territoriais
+    </div>
+
+    <div class="network-node" style="left:0; top:155px;">
+      Análises Pesqueiras
+    </div>
+
+    <div class="network-node" style="left:90px; top:40px;">
+      Dinâmica Costeira e Oceanografia Aplicada
+    </div>
+  </div>
+</div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    scroll
+  </div>
+</section>
+
+<!-- ═══ SERVICES STRIP ═══ -->
+<div class="services-strip" id="servicos">
+  <div class="services-strip-inner">
+    <p class="section-label">O que fazemos</p>
+    <h2 class="section-heading">Competências<br>integradas</h2>
+    <div class="strip-grid">
+      <div class="strip-cell">
+        <span class="strip-icon">🌊</span>
+        <div class="strip-title">Dados Oceanográficos e Ambientais</div>
+        <div class="strip-desc">Coleta, processamento e análise de dados físicos, químicos, geológicos, biológicos e sociais em sistemas costeiros, estuarinos e marinhos.</div>
+      </div>
+      <div class="strip-cell">
+        <span class="strip-icon">🗺️</span>
+        <div class="strip-title">Geoprocessamento e Modelagem Espacial</div>
+        <div class="strip-desc">SIG/GIS, sensoriamento remoto, análise espacial, mapas temáticos e monitoramento multitemporal.</div>
+      </div>
+      <div class="strip-cell">
+        <span class="strip-icon">📊</span>
+        <div class="strip-title">Ciência de Dados</div>
+        <div class="strip-desc">Estatística aplicada, séries temporais, automação de rotinas analíticas e visualização científica em Python e R, estruturação e consulta de banco de dados (SQL/mysql).</div>
+      </div>
+      <div class="strip-cell">
+        <span class="strip-icon">🎣</span>
+        <div class="strip-title">Análises Pesqueiras</div>
+        <div class="strip-desc">Avaliação de esforço pesqueiro, distribuição de frotas, uso do espaço marinho e integração entre pesca, ambiente e território.</div>
+      </div>
+      <div class="strip-cell">
+        <span class="strip-icon">🧬</span>
+        <div class="strip-title">Biodiversidade e Biologia Molecular</div>
+        <div class="strip-desc">Análises estátisticas da sociobiodiversidade, eDNA, DNA barcoding, filogeografia e integração entre dados genéticos e ecológicos.</div>
+      </div>
+      <div class="strip-cell">
+        <span class="strip-icon">🏘️</span>
+        <div class="strip-title">Análises Socioambientais e Territoriais</div>
+        <div class="strip-desc">Diagnósticos territoriais, etnoecologia, comunidades pesqueiras, Conhecimento Tradicionais e planejamento socioambiental aplicado.</div>
+      </div>
+      <div class="strip-cell">
+        <span class="strip-icon">🌱</span>
+        <div class="strip-title">Dinâmica Costeira e Oceanografia Aplicada</div>
+        <div class="strip-desc">Análises de Processos Hidrodinâmicos, Interpretação de Dinâmica Costeira, Integração de Processos Físicos e Usos territoriais, Gestão Ambiental e Planejamento Espacial Marinho.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ═══ TEAM ═══ -->
+
+<section class="team-section" id="equipe">
+  <p class="section-label">Equipe</p>
+  <h2 class="section-heading">Três especialistas,<br>um <em style="font-style:italic;color:var(--teal)">mar</em> de possibilidades</h2>
+
+  <div class="team-tabs" role="tablist" aria-label="Perfis da equipe OceanLab">
+    <a class="team-tab-btn active" href="#eduardo" role="tab" aria-selected="true" aria-controls="eduardo" data-member="eduardo" style="--tab-accent: var(--c1);">
+      <span class="team-tab-kicker">Análise de Dados</span>
+      <span class="team-tab-name">Eduardo Pantoja da Silva</span>
+    </a>
+    <a class="team-tab-btn" href="#joao" role="tab" aria-selected="false" aria-controls="joao" data-member="joao" style="--tab-accent: var(--c2);">
+      <span class="team-tab-kicker">Monitoramento ambiental</span>
+      <span class="team-tab-name">João Vitor da Silva Gomes</span>
+    </a>
+    <a class="team-tab-btn" href="#lucas" role="tab" aria-selected="false" aria-controls="lucas" data-member="lucas" style="--tab-accent: var(--c3);">
+      <span class="team-tab-kicker">Etnoecologia e Pesca</span>
+      <span class="team-tab-name">Lucas Gabriel Pereira da Silva</span>
+    </a>
+  </div>
+
+  <div class="team-panels">
+    <!-- ── EDUARDO ── -->
+    <article class="member-card active" id="eduardo" role="tabpanel" aria-labelledby="tab-eduardo" style="--accent-color: var(--c1);">
+      <div class="card-visual">
+        <div class="card-bg-shape"></div>
+        <div class="card-number">01</div>
+        <div class="card-avatar-wrap">
+          <div class="card-avatar">EP</div>
+        </div>
+      </div>
+      <div class="card-content">
+        <p class="member-role">Oceanógrafo · Geoprocessamento & Análise de Dados</p>
+        <h3 class="member-name">Eduardo<br>Pantoja da Silva</h3>
+
+        <div class="member-meta">
+          <div class="member-meta-item">
+            <span class="member-meta-label">Foco</span>
+            <span class="member-meta-value">Oceanografia física, SIG e sensoriamento remoto aplicados à zona costeira.</span>
+          </div>
+          <div class="member-meta-item">
+            <span class="member-meta-label">Atuação</span>
+            <span class="member-meta-value">Consultoria ambiental, séries temporais, batimetria e gestão marinha.</span>
+          </div>
+          <div class="member-meta-item">
+            <span class="member-meta-label">Vínculo</span>
+            <span class="member-meta-value">GEMC - Grupo de Estudos Marinhos e Costeiros</span>
+          </div>
+        </div>
+
+        <p class="member-bio">
+          Mestre em Oceanografia pela UFPA, com especialização em Geoprocessamento e Sensoriamento Remoto. Combina ciência de dados, SIG e oceanografia física para monitoramento costeiro e consultoria ambiental — incluindo projetos com Petrobras e INEOF.
+        </p>
+
+        <div class="tags">
+          <span class="tag">Python</span>
+          <span class="tag">GIS/SIG</span>
+          <span class="tag">Batimetria</span>
+          <span class="tag">Marés</span>
+          <span class="tag">Estuários</span>
+          <span class="tag">Consultoria</span>
+        </div>
+
+        <div class="services-grid">
+          <div class="service-item"><span class="dot"></span><span>Oceanografia física e geológica</span></div>
+          <div class="service-item"><span class="dot"></span><span>Sensoriamento remoto</span></div>
+          <div class="service-item"><span class="dot"></span><span>Análise de séries temporais</span></div>
+          <div class="service-item"><span class="dot"></span><span>Consultoria ambiental</span></div>
+          <div class="service-item"><span class="dot"></span><span>Processamento batimétrico</span></div>
+          <div class="service-item"><span class="dot"></span><span>Gestão costeira e marinha</span></div>
+        </div>
+
+        <div class="edu-strip">
+          <div class="edu-row">
+            <span class="edu-year">2028–2023</span>
+            <span class="edu-text">Bacharel em Oceanografia — UFPA</span>
+          </div>
+          <div class="edu-row">
+            <span class="edu-year">2023–2025</span>
+            <span class="edu-text">Mestrado em Oceanografia — PPGOC/UFPA</span>
+          </div>
+          <div class="edu-row">
+            <span class="edu-year">2025–atual</span>
+            <span class="edu-text">Especialização em Geoprocessamento — FACUVALE</span>
+          </div>
+          <div class="edu-row">
+            <span class="edu-year">2026–atual</span>
+            <span class="edu-text">Consultor Técnico — Consórcio Rpeotta</span>
+          </div>
+        </div>
+
+        <a class="lattes-link" href="https://lattes.cnpq.br/0663518890968216" target="_blank">
+          Currículo Lattes
+        </a>
+      </div>
+    </article>
+
+    <!-- ── JOÃO VITOR ── -->
+    <article class="member-card" id="joao" role="tabpanel" aria-labelledby="tab-joao" style="--accent-color: var(--c2);">
+      <div class="card-visual">
+        <div class="card-bg-shape"></div>
+        <div class="card-number">02</div>
+        <div class="card-avatar-wrap">
+          <div class="card-avatar">JV</div>
+        </div>
+      </div>
+      <div class="card-content">
+        <p class="member-role">Oceanógrafo · Monitoramento Ambiental & Limnologia</p>
+        <h3 class="member-name">João Vitor<br>da Silva Gomes</h3>
+
+        <div class="member-meta">
+          <div class="member-meta-item">
+            <span class="member-meta-label">Foco</span>
+            <span class="member-meta-value">Monitoramento hidrodinâmico e meteorológico de ecossistemas aquáticos amazônicos.</span>
+          </div>
+          <div class="member-meta-item">
+            <span class="member-meta-label">Atuação</span>
+            <span class="member-meta-value">Qualidade da água, drones, sensores, batimetria e gestão hídrica.</span>
+          </div>
+          <div class="member-meta-item">
+            <span class="member-meta-label">Vínculo</span>
+            <span class="member-meta-value">Pesquisador no LAPMAR/UFPA e Bolsista em conservação do peixe-boi (Bicho d'água).</span>
+          </div>
+        </div>
+
+        <p class="member-bio">
+          Mestre em Oceanografia pela UFPA (bolsista FADESP), com ênfase em monitoramento hidrodinâmico e meteorológico de ecossistemas aquáticos amazônicos. Pesquisador no LAPMAR/UFPA e bolsista do projeto de conservação do peixe-boi (Instituto Bicho Dágua). Experiência com drones, sensores, batimetria e geotecnologias.
+        </p>
+
+        <div class="tags">
+          <span class="tag">Limnologia</span>
+          <span class="tag">Hidrodinâmica</span>
+          <span class="tag">Drones</span>
+          <span class="tag">QGIS</span>
+          <span class="tag">Climatologia</span>
+          <span class="tag">Conservação</span>
+        </div>
+
+        <div class="services-grid">
+          <div class="service-item"><span class="dot"></span><span>Monitoramento de lagos e rios</span></div>
+          <div class="service-item"><span class="dot"></span><span>Qualidade da água</span></div>
+          <div class="service-item"><span class="dot"></span><span>Coleta com sensores e drones</span></div>
+          <div class="service-item"><span class="dot"></span><span>Estudos meteorológicos</span></div>
+          <div class="service-item"><span class="dot"></span><span>Levantamentos batimétricos</span></div>
+          <div class="service-item"><span class="dot"></span><span>Gestão de recursos hídricos</span></div>
+        </div>
+
+        <div class="edu-strip">
+          <div class="edu-row">
+            <span class="edu-year">2023–2025</span>
+            <span class="edu-text">Mestrado em Oceanografia — UFPA</span>
+          </div>
+          <div class="edu-row">
+            <span class="edu-year">2018–2022</span>
+            <span class="edu-text">Graduação em Oceanografia — UFPA</span>
+          </div>
+          <div class="edu-row">
+            <span class="edu-year">2023–atual</span>
+            <span class="edu-text">Pesquisador — LAPMAR/UFPA</span>
+          </div>
+        </div>
+
+        <a class="lattes-link" href="http://lattes.cnpq.br/4087297761306008" target="_blank">
+          Currículo Lattes
+        </a>
+      </div>
+    </article>
+
+    <!-- ── LUCAS GABRIEL ── -->
+    <article class="member-card" id="lucas" role="tabpanel" aria-labelledby="tab-lucas" style="--accent-color: var(--c3);">
+      <div class="card-visual">
+        <div class="card-bg-shape"></div>
+        <div class="card-number">03</div>
+        <div class="card-avatar-wrap">
+          <div class="card-avatar">LG</div>
+        </div>
+      </div>
+      <div class="card-content">
+        <p class="member-role">Oceanógrafo · Etnoecologia & Estudos Pesqueiros</p>
+        <h3 class="member-name">Lucas Gabriel<br>Pereira da Silva</h3>
+
+        <div class="member-meta">
+          <div class="member-meta-item">
+            <span class="member-meta-label">Foco</span>
+            <span class="member-meta-value">Etnoecologia, Sociobiodiversidade, Análises Territoriais e Gerenciamento Costeiro.</span>
+          </div>
+          <div class="member-meta-item">
+            <span class="member-meta-label">Atuação</span>
+            <span class="member-meta-value">Diagnóstico socioambiental, etnomapeamento e biologia molecular aplicada.</span>
+          </div>
+          <div class="member-meta-item">
+            <span class="member-meta-label">Vínculo</span>
+            <span class="member-meta-value">Doutorando no PPGEAP/UFPA, Pesquisador do Grupo de Investigação Biológica Integrada (GIBI) e coordenador do Caeté.</span>
+          </div>
+        </div>
+
+        <p class="member-bio">
+          Mestre e Doutorando em Ecologia Aquática e Pesca (PPGEAP/UFPA, bolsista CAPES), com período sanduíche no Departamento de Antropologia da Universidad de Chile (Uchile). Desenvolve pesquisas em etnoecologia, etnobiodiversidade e biologia molecular com comunidades pesqueiras da Amazônia costeira.
+        </p>
+
+        <div class="tags">
+          <span class="tag">Etnoecologia</span>
+          <span class="tag">DNA Barcoding</span>
+          <span class="tag">Sociobiodiversidade</span>
+          <span class="tag">Biologia Molecular</span>
+          <span class="tag">Pesca Artesanal</span>
+          <span class="tag">Maretórios</span>
+        </div>
+
+        <div class="services-grid">
+          <div class="service-item"><span class="dot"></span><span>Etnoecologia e etnobiodiversidade</span></div>
+          <div class="service-item"><span class="dot"></span><span>Biologia molecular e genética</span></div>
+          <div class="service-item"><span class="dot"></span><span>Diagnóstico socioambiental</span></div>
+          <div class="service-item"><span class="dot"></span><span>Etnomapeamento de territórios</span></div>
+          <div class="service-item"><span class="dot"></span><span>Conservação da Biodiversidade</span></div>
+          <div class="service-item"><span class="dot"></span><span>Oceanografia socioambiental</span></div>
+        </div>
+
+        <div class="edu-strip">
+          <div class="edu-row">
+            <span class="edu-year">2025–atual</span>
+            <span class="edu-text">Doutorado em Ecologia Aquática e Pesca — UFPA</span>
+          </div>
+          <div class="edu-row">
+            <span class="edu-year">2024</span>
+            <span class="edu-text">Intercâmbio na Facultad de Antropologia - Uchile</span>
+          </div>
+          <div class="edu-row">
+            <span class="edu-year">2023–2025</span>
+            <span class="edu-text">Mestrado em Ecologia Aquática e Pesca — PPGEAP/UFPA</span>
+          </div>
+           <div class="edu-row">
+            <span class="edu-year">2028–2022</span>
+            <span class="edu-text">Bacharel em Oceanografia</span>
+          </div>
+          <div class="edu-row">
+            <span class="edu-year">2025</span>
+            <span class="edu-text">Láurea Acadêmica — PPGEAP/UFPA</span>
+          </div>
+        </div>
+
+        <a class="lattes-link" href="http://lattes.cnpq.br/7730388780255807" target="_blank">
+          Currículo Lattes
+        </a>
+      </div>
+    </article>
+  </div>
+</section>
+
+
+<!-- ═══ STATS STRIP ═══ -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-cell">
+      <span class="stat-number" data-count="3">3</span>
+      <span class="stat-label">Oceanógrafos</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-number" data-count="12">12+</span>
+      <span class="stat-label">Projetos ativos</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-number" data-count="20">20+</span>
+      <span class="stat-label">Publicações</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-number" data-count="7">7+</span>
+      <span class="stat-label">Anos de pesquisa</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PROJECTS ═══ -->
+<section class="projects-section" id="projetos">
+  <p class="section-label">Projetos em Destaque</p>
+  <h2 class="section-heading">Do campo à<br>publicação <em style="font-style:italic;color:var(--teal)">científica</em></h2>
+
+  <div class="projects-grid">
+
+    <div class="project-card" style="--proj-color:#00A99D">
+      <div class="project-badge">Oceanografia Física</div>
+      <div class="project-title">Evolução Multitemporal do Canal de Acesso do Estuário do Rio Amazonas</div>
+      <div class="project-desc">Análise integrada de dados batimétricos, hidrodinâmicos e morfológicos para compreender a evolução temporal do canal estuarino do maior rio do mundo. Dissertação de Mestrado — UFPA.</div>
+      <div class="project-meta">
+        <span class="project-author">Eduardo Pantoja</span>
+        <span class="project-year">2023–2025</span>
+      </div>
+    </div>
+
+    <div class="project-card" style="--proj-color:#00A99D">
+      <div class="project-badge">Consultoria</div>
+      <div class="project-title">Projeto FZA-M-59 — Petrobras / Apó Consultoria</div>
+      <div class="project-desc">Consultoria socioambiental com elaboração de cronogramas logísticos e execução do Plano de Comunicação Social (PCS) para projeto offshore da Petrobras na Margem Equatorial Brasileira.</div>
+      <div class="project-meta">
+        <span class="project-author">Eduardo Pantoja</span>
+        <span class="project-year">2022</span>
+      </div>
+    </div>
+
+    <div class="project-card" style="--proj-color:#00A99D">
+      <div class="project-badge">Monitoramento</div>
+      <div class="project-title">Observatório da Costa Amazônica — GEMC/UFPA</div>
+      <div class="project-desc">Levantamento de dados geográficos e caracterização de ambientes costeiros com geração de banco de dados para gestores públicos. Pesquisador bolsista integrante do grupo desde 2024.</div>
+      <div class="project-meta">
+        <span class="project-author">Eduardo Pantoja</span>
+        <span class="project-year">2024–atual</span>
+      </div>
+    </div>
+
+    <div class="project-card" style="--proj-color:#3A86C8">
+      <div class="project-badge">Limnologia</div>
+      <div class="project-title">Monitoramento Hidrodinâmico dos Lagos Água Preta e Bolonha</div>
+      <div class="project-desc">Diagnóstico e prognóstico integrado dos principais reservatórios de abastecimento de Belém, avaliando características bióticas, abióticas e socioeconômicas para enquadramento de corpos d'água.</div>
+      <div class="project-meta">
+        <span class="project-author">João Vitor Gomes</span>
+        <span class="project-year">2023–atual</span>
+      </div>
+    </div>
+
+    <div class="project-card" style="--proj-color:#3A86C8">
+      <div class="project-badge">Conservação</div>
+      <div class="project-title">Conservação do Peixe-Boi no Estado do Pará — Instituto Bicho Dágua/UFPA</div>
+      <div class="project-desc">Monitoramento abiótico para implementação de recintos de aclimatação para peixe-boi amazônico. Uso de sensores, batimetria e geotecnologias aplicadas ao manejo de recursos hídricos.</div>
+      <div class="project-meta">
+        <span class="project-author">João Vitor Gomes</span>
+        <span class="project-year">2024–atual</span>
+      </div>
+    </div>
+
+    <div class="project-card" style="--proj-color:#3A86C8">
+      <div class="project-badge">Clima</div>
+      <div class="project-title">Costa Amazônica: Mitigação e Adaptação às Mudanças Climáticas — LAPMAR</div>
+      <div class="project-desc">Metodologia multidimensional de monitoramento contínuo da zona costeira paraense, com sensores instalados por 12 meses cobrindo um ciclo hidrológico completo. Dados abertos para gestores e sociedade.</div>
+      <div class="project-meta">
+        <span class="project-author">João Vitor Gomes</span>
+        <span class="project-year">2023–atual</span>
+      </div>
+    </div>
+
+    <div class="project-card" style="--proj-color:#8C6D3F">
+      <div class="project-badge">Biodiversidade e Biologia Molecular</div>
+      <div class="project-title">Um Peixe e Seu Múltiplo: (Etno)Ciência em uma perspectiva integrada como instrumento de visibilização de Etnobiodiversidade</div>
+      <div class="project-desc">Mestrado com período sanduíche na Universidad de Chile. Uso de DNA barcoding e etnoecologia para visibilizar a etnobiodiversidade da Amazônia Costeira. Bolsista CAPES — Láurea Acadêmica PPGEAP/UFPA 2025.</div>
+      <div class="project-meta">
+        <span class="project-author">Lucas Pereira</span>
+        <span class="project-year">2023–2025</span>
+      </div>
+    </div>
+
+    <div class="project-card" style="--proj-color:#8C6D3F">
+      <div class="project-badge">Etnoecologia</div>
+      <div class="project-title">Maretórios Amazônicos: Ameaças aos espaços de produção de sociobiodiversidade e garantia de mundos de vida na comunidade tradicional de pesca de Jubim, Arquipélago do Marajó - Salvaterra/PA</div>
+      <div class="project-desc">Pesquisa transdisciplinar sobre ameaças à sociobiodiversidade de comunidades tradicionais de pesca. Etnomapeamento, conhecimento tradicional e diálogo entre ciência e direito ambiental.</div>
+      <div class="project-meta">
+        <span class="project-author">Lucas Pereira</span>
+        <span class="project-year">2022–atual</span>
+      </div>
+    </div>
+
+    <div class="project-card" style="--proj-color:#8C6D3F">
+      <div class="project-badge">Filogeografia</div>
+      <div class="project-title">Ferramentas Moleculares para Conservação de Raias do Atlântico Sul</div>
+      <div class="project-desc">Uso de biologia molecular para inferências genéticas em elasmobranquios do Atlântico Sul Ocidental — especiação críptica, variabilidade genética e novas linhagens moleculares em espécies ameaçadas pela pesca.</div>
+      <div class="project-meta">
+        <span class="project-author">Lucas Pereira</span>
+        <span class="project-year">2020–2022</span>
+      </div>
+    </div>
+
+    <div class="project-card" style="--proj-color:#8C6D3F">
+      <div class="project-badge">Filogeografia</div>
+      <div class="project-title">The Global Shark Movement Project</div>
+      <div class="project-desc">O Global Shark Movement Project (GSMP) é um projeto de pesquisa científica que reúne 40 equipes de pesquisa de tubarões distribuídas por mais de 100 institutos em 26 países.</div>
+      <div class="project-meta">
+        <span class="project-author">Lucas Pereira</span>
+        <span class="project-year">2020–2022</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+
+    <div class="footer-brand">
+      <div class="brand-name">OceanLab</div>
+      <div class="brand-sub">Coastal & Socioenvironmental Systems</div>
+      <p>Grupo de oceanógrafos da Universidade Federal do Pará dedicados à pesquisa, monitoramento e consultoria em sistemas costeiros e socioambientais da Amazônia.</p>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Equipe</div>
+      <ul class="footer-links">
+        <li><a href="#eduardo">Eduardo Pantoja da Silva</a></li>
+        <li><a href="#joao">João Vitor da Silva Gomes</a></li>
+        <li><a href="#lucas">Lucas Gabriel Pereira da Silva</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Vínculos Institucionais</div>
+      <div class="footer-partners">
+        <span class="partner-tag">UFPA — Universidade Federal do Pará</span>
+        <span class="partner-tag">LAPMAR - Laboratório de Monitoramento Marinho</span>
+        <span class="partner-tag">GEMC - Grupo de Estudos Marinho Costeiros</span>
+        <span class="partner-tag">Instituto Bicho Dágua</span>
+        <span class="partner-tag">Grupo de Investigação Biológica Integrada</span>
+        <span class="partner-tag">Caeté - Coletivo de Articulações Marginais</span>
+        <span class="partner-tag">Centro de Estudos Avançados da Biodiversidade</span>
+        <span class="partner-tag">Nucleo de Ecologia Aquática e Pesca - NEAP</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 OceanLab · Coastal & Socioenvironmental Systems · Belém, Pará, Brasil</p>
+    <p>Eduardo Pantoja · João Vitor Gomes · Lucas Gabriel Pereira</p>
+  </div>
+</footer>
+
+<script>
+// ── floating particles ──
+const container = document.getElementById('particles');
+for (let i = 0; i < 28; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = Math.random() * 6 + 2;
+  p.style.cssText = `
+    width:${size}px; height:${size}px;
+    left:${Math.random()*100}%;
+    --dur:${8 + Math.random()*14}s;
+    --del:${-Math.random()*20}s;
+    background:${['#00A99D','#3A86C8','#8C6D3F'][Math.floor(Math.random()*3)]};
+  `;
+  container.appendChild(p);
+}
+
+// ── project cards reveal ──
+const projCards = document.querySelectorAll('.project-card');
+const projObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      projObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08 });
+projCards.forEach(c => projObserver.observe(c));
+
+// ── team tabs ──
+const teamTabBtns = document.querySelectorAll('.team-tab-btn');
+const memberPanels = document.querySelectorAll('.member-card');
+
+function activateMember(memberId, updateHash = false) {
+  memberPanels.forEach(panel => {
+    const isActive = panel.id === memberId;
+    panel.classList.toggle('active', isActive);
+    panel.style.display = isActive ? 'grid' : 'none';
+  });
+
+  teamTabBtns.forEach(btn => {
+    const isActive = btn.dataset.member === memberId;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  if (updateHash) {
+    location.hash = memberId;
+  }
+}
+
+teamTabBtns.forEach(btn => {
+  btn.addEventListener('click', (event) => {
+    event.preventDefault();
+    activateMember(btn.dataset.member, true);
+  });
+});
+
+window.addEventListener('hashchange', () => {
+  const hashId = location.hash.replace('#', '');
+  if (['eduardo', 'joao', 'lucas'].includes(hashId)) {
+    activateMember(hashId, false);
+  }
+});
+
+(function initMemberTabs() {
+  const hashId = location.hash.replace('#', '');
+  if (['eduardo', 'joao', 'lucas'].includes(hashId)) {
+    activateMember(hashId, false);
+  } else {
+    activateMember('eduardo', false);
+  }
+})();
+
+// ══════════════════════════════════════════
+//  TAB NAVIGATION
+// ══════════════════════════════════════════
+const tabNav   = document.getElementById('tabNav');
+const tabBtns  = document.querySelectorAll('.tab-btn');
+const OFFSET   = 64;
+
+// Map section ids in order for scroll-spy
+const sectionIds = ['topo', 'servicos', 'equipe', 'projetos'];
+
+// Show nav after scrolling past hero fold
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY;
+  if (scrollY > 80) {
+    tabNav.classList.add('visible');
+  } else {
+    tabNav.classList.remove('visible');
+  }
+  updateActiveTab();
+}, { passive: true });
+
+// Click handler — smooth scroll to section or team member
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.dataset.target;
+    let scrollTargetId = targetId;
+
+    if (['eduardo', 'joao', 'lucas'].includes(targetId)) {
+      activateMember(targetId, true);
+      scrollTargetId = 'equipe';
+    }
+
+    const el = document.getElementById(scrollTargetId);
+    if (!el) return;
+
+    const top = el.getBoundingClientRect().top + window.scrollY - OFFSET;
+    window.scrollTo({ top, behavior: 'smooth' });
+
+    setActiveTab(btn);
+  });
+});
+
+function setActiveTab(activeBtn) {
+  tabBtns.forEach(b => b.classList.remove('active'));
+  activeBtn.classList.add('active');
+}
+
+function updateActiveTab() {
+  const scrollY = window.scrollY + OFFSET + 40;
+  let current = sectionIds[0];
+
+  sectionIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top + window.scrollY <= scrollY) {
+      current = id;
+    }
+  });
+
+  tabBtns.forEach(btn => {
+    const target = btn.dataset.target;
+    const isMemberBtn = ['eduardo', 'joao', 'lucas'].includes(target);
+    const activeMember = document.querySelector('.member-card.active')?.id;
+    const shouldBeActive =
+      (current === 'equipe' && isMemberBtn && target === activeMember) ||
+      (!isMemberBtn && target === current);
+
+    btn.classList.toggle('active', shouldBeActive);
+  });
+}
+
+// Support direct links with hashes to member tabs
+if (location.hash) {
+  const hashId = location.hash.replace('#', '');
+  if (['eduardo', 'joao', 'lucas'].includes(hashId)) {
+    activateMember(hashId);
+  }
+} else {
+  activateMember('eduardo');
+}
+</script>
+</body>
+</html>
